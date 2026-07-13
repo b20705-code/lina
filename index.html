@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAST LIFE CHRONICLE :: 전생의 기록서</title>
+    <style>
+        /* [디자인] 파스텔 테마 및 레이아웃 */
+        body {
+            background-color: #FFF9E6;
+            color: #4E342E;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 950px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid #FFE082;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        h1 { font-size: 26px; text-align: center; margin-bottom: 5px; color: #4E342E; }
+        .subtitle { font-size: 13px; color: #A1887F; text-align: center; font-style: italic; margin-bottom: 15px; }
+        .divider { text-align: center; color: #FFB74D; margin: 10px 0; }
+        
+        .btn {
+            background-color: #FFB74D;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: block;
+            margin: 15px auto;
+        }
+        .btn:hover { background-color: #FF8A80; transform: scale(1.03); }
+        .btn-sm { padding: 8px 15px; font-size: 13px; margin: 0; display: inline-block; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;}
+        .btn-secondary { background-color: #B0BEC5; color: white; }
+        .btn-accent { background-color: #FF8A80; color: white; }
+        .btn-cyan { background-color: #E0F7FA; color: #006064; }
+        .btn-orange { background-color: #FFF3E0; color: #E65100; }
+
+        /* Step 1 쪽지 가챠 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #FFFDE7;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #FFE082;
+            margin-bottom: 15px;
+        }
+        .box-container {
+            background: #FFFDE7;
+            border: 2px dashed #FFE082;
+            border-radius: 8px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            min-height: 180px;
+            align-content: center;
+        }
+        .paper-card {
+            height: 70px;
+            background: #FFE082;
+            border: 2px solid #D7CCC8;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .paper-card.opened { background: #FFF0F5; border-color: #FF8A80; color: #FF8A80; font-weight: bold; font-size: 26px; }
+        
+        /* Step 2 결과창 캐릭터 캔버스 */
+        .main-panel { display: flex; gap: 15px; margin-top: 15px; }
+        .panel-left, .panel-right {
+            flex: 1;
+            background: #ffffff;
+            border: 2px solid #FFE082;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #charCanvas {
+            background: #F5F5F5;
+            border-radius: 50%;
+            border: 4px solid #FFE082;
+            margin-bottom: 10px;
+        }
+        .stat-group {
+            width: 100%;
+            background: #FFF9E6;
+            border-radius: 8px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .stat-row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; }
+        .history-group {
+            margin-top: 15px;
+            background: #ffffff;
+            border: 1px solid #FFE082;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .history-text { font-size: 13px; color: #A1887F; line-height: 1.4; white-space: pre-line; }
+
+        @keyframes flashAnim {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        .flash { animation: flashAnim 0.3s ease-in-out; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="screen-welcome" class="screen active">
+        <h1>✨ 몽글몽글 전생 가챠 ✨<br>[ 나의 전생 기록서 ]</h1>
+        <div class="subtitle">~ 확률과 통계로 찾아가는 말랑한 운명 투어 ~</div>
+        <div class="divider">🧸 ────────────────── 🧸</div>
+        <button class="btn" onclick="goToStep1()">💝 전생의 책 열어보기 (클릭) 💝</button>
+        <p style="text-align:center; font-size:13px; line-height:1.6;">
+            안녕하세요! 여기는 당신의 귀여운 전생을 추적하는 비밀 연구소랍니다 ٩(ˊᗜˋ*)و<br>
+            두 숫자의 합이 '8 이상'이 나오면 모험의 문이 활짝 열릴 거예요!
+        </p>
+    </div>
+
+    <div id="screen-step1" class="screen">
+        <div class="navbar">
+            <span style="font-size:13px; color:#FFB74D;">STEP 1. 신비한 문 열기</span>
+            <button class="btn-sm btn-cyan" onclick="showMathInfo()">💡 수학 원리 보기</button>
+        </div>
+        <h3 style="text-align:center; margin: 5px 0;" id="gacha-title">💌 보물상자 속 쪽지를 골라봐요! (0/2)</h3>
+        <div class="box-container" id="box-container"></div>
+        <p style="text-align:center; font-size:13px;" id="gacha-hint">✉️ 리본 쪽지 두 장을 클릭해 주세요!</p>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-top:15px;">
+            <span id="prob-badge" style="font-size:12px; background:#FFE082; padding:5px 10px; border-radius:15px;">이론 확률: 40.0% 🍀</span>
+            <button class="btn-sm btn-secondary" id="btn-next" onclick="goToStep2()" disabled>➡️ 추출소로 이동</button>
+        </div>
+    </div>
+
+    <div id="screen-step2" class="screen">
+        <div class="navbar">
+            <span style="font-size:13px; color:#FFB74D;">STEP 2. 두근두근 전생 소환</span>
+            <button class="btn-sm btn-orange" onclick="simulateLargeNumbers()">🤖 대수의 법칙 테스트 (1,000회)</button>
+        </div>
+        
+        <div class="main-panel">
+            <div class="panel-left" id="char-panel">
+                <canvas id="charCanvas" width="280" height="280"></canvas>
+                <div id="grade-display" style="text-align:center; font-size:14px; min-height:60px;">[ 당신의 전생은? ]</div>
+            </div>
+            
+            <div class="panel-right">
+                <div style="width:100%; text-align:right; margin-bottom:10px;">
+                    <span style="font-size:12px; background:#FFF8E1; padding:4px 8px; border-radius:5px;">
+                        🧸 찬스: <b id="pity-badge" style="background:#FF8A80; color:white; padding:2px 5px; border-radius:3px;">2 / 2 회</b>
+                    </span>
+                </div>
+                <div class="stat-group">
+                    <div style="font-size:14px; margin-bottom:10px;" id="total-count-lbl">가챠 추출 횟수: 0회</div>
+                    <div class="stat-row"><span>🐣 국왕 (이론: 10%)</span><span id="stat-king" style="color:#FFA000">0.00%</span></div>
+                    <div class="stat-row"><span>🐣 귀족 (이론: 20%)</span><span id="stat-noble" style="color:#F57C00">0.00%</span></div>
+                    <div class="stat-row"><span>🐣 백성 (이론: 40%)</span><span id="stat-people" style="color:#7E57C2">0.00%</span></div>
+                    <div class="stat-row"><span>🐣 노비 (이론: 30%)</span><span id="stat-slave" style="color:#78909C">0.00%</span></div>
+                </div>
+                <div style="width:100%; display:flex; justify-content:space-between; margin-top:20px;">
+                    <button class="btn-sm btn-secondary" onclick="resetAll()">↩️ 다시</button>
+                    <button class="btn-sm btn-accent" id="spin-btn" onclick="triggerGacha()">🔮 소환!</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-group">
+            <div style="font-size:13px; margin-bottom:5px;"><b>📜 누적 전생 역사서</b></div>
+            <div class="history-text" id="history-text">윤회를 돌려보세요!</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let totalCount = 0;
+    const counts = {"king": 0, "noble": 0, "people": 0, "slave": 0};
+    const modifiers = ["방구쟁이", "말랑말랑", "민트초코파", "밤새 게임하던", "늦잠꾸러기", "눈물 많은", "빵에 진심인", "우주 대스타"];
+    let historyLogs = [];
+    let pickedPapers = [], paperValues = [], gateUnlocked = false, isLock = false;
+
+    // 🎨 캐릭터 그리기 로직 (Canvas)
+    function drawAvatar(type) {
+        const canvas = document.getElementById('charCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 배경 별
+        ctx.fillStyle = "#FFE082";
+        for(let i=0; i<10; i++) {
+            ctx.font = "14px serif";
+            ctx.fillText("⭐", Math.random()*canvas.width, Math.random()*canvas.height);
+        }
+
+        // 기본 둥근 프레임
+        ctx.strokeStyle = "#FFE082";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(140, 140, 130, 0, Math.PI*2);
+        ctx.stroke();
+
+        if (type === "init") {
+            ctx.font = "80px serif";
+            ctx.textAlign = "center";
+            ctx.fillText("🔮", 140, 170);
+            return;
+        }
+
+        if (type === "robot") {
+            ctx.font = "80px serif";
+            ctx.textAlign = "center";
+            ctx.fillText("🤖", 140, 170);
+            return;
+        }
+
+        // 얼굴 그리기 공통
+        const drawFace = (color) => {
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.arc(140, 130, 60, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#FFCDD2"; // 볼터치
+            ctx.beginPath(); ctx.arc(110, 150, 10, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(170, 150, 10, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "#3E2723"; // 눈
+            ctx.beginPath(); ctx.arc(120, 130, 4, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(160, 130, 4, 0, Math.PI*2); ctx.fill();
+        };
+
+        if (type === "king") {
+            drawFace("#FFE0B2");
+            ctx.fillStyle = "#E53935"; // 곤룡포
+            ctx.beginPath(); ctx.moveTo(80, 190); ctx.lineTo(200, 190); ctx.lineTo(230, 270); ctx.lineTo(50, 270); ctx.fill();
+            ctx.fillStyle = "#FFD54F"; // 왕관
+            ctx.beginPath(); ctx.moveTo(110, 80); ctx.lineTo(125, 30); ctx.lineTo(140, 50); ctx.lineTo(155, 30); ctx.lineTo(170, 80); ctx.fill();
+            ctx.font = "20px serif"; ctx.fillText("🐉", 140, 240);
+        } else if (type === "noble") {
+            drawFace("#FFF3E0");
+            ctx.fillStyle = "#CE93D8"; // 도포
+            ctx.beginPath(); ctx.moveTo(80, 190); ctx.lineTo(200, 190); ctx.lineTo(230, 270); ctx.lineTo(50, 270); ctx.fill();
+            ctx.fillStyle = "#212121"; // 갓
+            ctx.fillRect(110, 40, 60, 40); ctx.beginPath(); ctx.ellipse(140, 80, 80, 10, 0, 0, Math.PI*2); ctx.fill();
+        } else if (type === "people") {
+            drawFace("#FFE0B2");
+            ctx.fillStyle = "#A1887F"; // 삼베옷
+            ctx.beginPath(); ctx.moveTo(80, 190); ctx.lineTo(200, 190); ctx.lineTo(230, 270); ctx.lineTo(50, 270); ctx.fill();
+            ctx.fillStyle = "#CDDC39"; // 머리띠
+            ctx.fillRect(110, 80, 60, 10);
+            ctx.font = "20px serif"; ctx.fillText("🌾", 140, 240);
+        } else if (type === "slave") {
+            drawFace("#D7CCC8");
+            ctx.fillStyle = "#CFD8DC"; // 누더기
+            ctx.beginPath(); ctx.moveTo(80, 190); ctx.lineTo(200, 190); ctx.lineTo(230, 270); ctx.lineTo(50, 270); ctx.fill();
+            ctx.fillStyle = "white"; // 머리수건
+            ctx.beginPath(); ctx.arc(100, 90, 15, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(180, 90, 15, 0, Math.PI*2); ctx.fill();
+            ctx.font = "20px serif"; ctx.fillText("🧹", 140, 240);
+        }
+    }
+
+    // [시스템] 화면 및 데이터 제어
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function goToStep1() { showScreen('screen-step1'); resetPapersData(); }
+
+    function showMathInfo() {
+        alert("📊 [수학적 확률]\n\n1~6 쪽지 중 2개를 뽑는 경우의 수: 30가지\n합이 8 이상인 조합: 12가지\n결과: 12/30 = 40% 성공!");
+    }
+
+    function resetPapersData() {
+        pickedPapers = []; isLock = false; gateUnlocked = false;
+        let numbers = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+        paperValues = numbers;
+        const container = document.getElementById('box-container');
+        container.innerHTML = '';
+        for(let i=0; i<6; i++) {
+            let card = document.createElement('div');
+            card.className = 'paper-card';
+            card.innerHTML = "🎁";
+            card.onclick = () => onCardClick(i);
+            container.appendChild(card);
+        }
+        document.getElementById('btn-next').disabled = true;
+    }
+
+    function onCardClick(idx) {
+        if (isLock || pickedPapers.length >= 2 || pickedPapers.includes(idx)) return;
+        pickedPapers.push(idx);
+        const card = document.getElementById('box-container').children[idx];
+        card.classList.add('opened');
+        card.innerHTML = paperValues[idx];
+
+        if (pickedPapers.length === 2) {
+            let sum = paperValues[pickedPapers[0]] + paperValues[pickedPapers[1]];
+            if (sum >= 8) {
+                gateUnlocked = true;
+                document.getElementById('prob-badge').innerHTML = "성공! 문이 열렸어요 🥳";
+                document.getElementById('prob-badge').style.background = "#4FC3F7";
+                document.getElementById('btn-next').disabled = false;
+                document.getElementById('btn-next').classList.replace('btn-secondary', 'btn-accent');
+            } else {
+                isLock = true;
+                setTimeout(() => { alert("합이 " + sum + "이에요! 다시 섞을게요 🥺"); resetPapersData(); }, 800);
+            }
+        }
+    }
+
+    function goToStep2() { showScreen('screen-step2'); drawAvatar("init"); updateStatsUI(); }
+
+    function triggerGacha() {
+        if (totalCount >= 2) { alert("2번의 기회를 모두 썼어요!"); return; }
+        document.getElementById('charCanvas').classList.add('flash');
+        setTimeout(() => {
+            document.getElementById('charCanvas').classList.remove('flash');
+            runGacha();
+        }, 300);
+    }
+
+    function runGacha() {
+        let rand = Math.random(), grade = "";
+        if (rand < 0.10) grade = "king";
+        else if (rand < 0.30) grade = "noble";
+        else if (rand < 0.70) grade = "people";
+        else grade = "slave";
+
+        let mod = modifiers[Math.floor(Math.random() * modifiers.length)];
+        let titleMap = {"king":"아기 국왕님", "noble":"대지주 귀족", "people":"동네 백성", "slave":"말랑이 노비"};
+        let fullTitle = `${mod} ${titleMap[grade]}`;
+
+        totalCount++; counts[grade]++;
+        historyLogs.push(`● ${totalCount}차: [${fullTitle}]`);
+        document.getElementById('history-text').innerText = historyLogs.join('\n');
+        
+        drawAvatar(grade);
+        document.getElementById('grade-display').innerHTML = `과거 당신의 모습은...<br><b style='color:#FF8A80; font-size:17px;'>🎉 ${fullTitle} 🎉</b>`;
+        
+        let remains = 2 - totalCount;
+        document.getElementById('pity-badge').innerText = `${remains} / 2 회`;
+        updateStatsUI();
+
+        if (totalCount === 2) {
+            document.getElementById('spin-btn').innerText = "❌ 종료";
+            document.getElementById('spin-btn').disabled = true;
+        }
+    }
+
+    function simulateLargeNumbers() {
+        for(let i=0; i<1000; i++) {
+            let r = Math.random();
+            if (r < 0.10) counts["king"]++;
+            else if (r < 0.30) counts["noble"]++;
+            else if (r < 0.70) counts["people"]++;
+            else counts["slave"]++;
+            totalCount++;
+        }
+        updateStatsUI();
+        drawAvatar("robot");
+        document.getElementById('grade-display').innerHTML = "<b style='color:#4FC3F7;'>🤖 1,000회 시뮬레이션 완료!</b><br>확률이 이론치에 수렴하는 걸 확인해보세요.";
+    }
+
+    function updateStatsUI() {
+        if(totalCount === 0) return;
+        document.getElementById('total-count-lbl').innerText = `가챠 추출 횟수: ${totalCount}회`;
+        document.getElementById('stat-king').innerText = `${((counts["king"]/totalCount)*100).toFixed(2)}%`;
+        document.getElementById('stat-noble').innerText = `${((counts["noble"]/totalCount)*100).toFixed(2)}%`;
+        document.getElementById('stat-people').innerText = `${((counts["people"]/totalCount)*100).toFixed(2)}%`;
+        document.getElementById('stat-slave').innerText = `${((counts["slave"]/totalCount)*100).toFixed(2)}%`;
+    }
+
+    function resetAll() {
+        totalCount = 0; Object.keys(counts).forEach(k => counts[k]=0); historyLogs = [];
+        document.getElementById('spin-btn').innerText = "🔮 소환!";
+        document.getElementById('spin-btn').disabled = false;
+        showScreen('screen-welcome');
+    }
+</script>
+
+</body>
+</html>
